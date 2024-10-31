@@ -17,22 +17,35 @@ export default function RepoInput() {
     setRepo(parseGitHubURL(input) || input);
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' || e.key === 'NumpadEnter') {
+      handleSearch();
+    }
+  };
+
   return (
-    <div className="flex flex-col items-center">
-      <div className="w-full max-w-md">
+    <div className="flex flex-col items-center gap-3 w-full max-w-xl mx-auto">
+      <div className="w-full">
         <input
           type="text"
           value={repo}
           onChange={handleInputChange}
-          placeholder="Enter repo or GitHub URL (e.g., vercel/next.js)"
-          className="w-full px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+          onKeyDown={handleKeyDown}
+          placeholder="Enter repo (e.g., ClickHouse/ClickHouse) or GitHub URL"
+          className="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg
+            text-foreground placeholder:text-gray-500 dark:placeholder:text-gray-400
+            transition-colors duration-200
+            focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 dark:focus:border-blue-400"
         />
       </div>
       <button
         onClick={handleSearch}
-        className="mt-4 px-6 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+        className="px-8 py-3 font-medium bg-blue-600 hover:bg-blue-700
+          dark:bg-gray-700 dark:hover:bg-gray-600
+          text-white rounded-lg transition-colors duration-200
+          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
       >
-        Search
+        Find Repos
       </button>
     </div>
   );
