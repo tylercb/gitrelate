@@ -101,7 +101,7 @@ export const fetchDataFromClickHouse = async (query: string): Promise<RelatedRep
       });
   } catch (error) {
     clearTimeout(timeout);
-    if (error.name === 'AbortError') {
+    if (error instanceof Error && error.name === 'AbortError') {
       throw new Error('Request timed out. Please try again.');
     }
     console.error('Error fetching data from ClickHouse:', error);
