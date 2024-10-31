@@ -4,7 +4,7 @@ import RepoTable from '@/app/components/RepoTable';
 import Loading from '@/app/components/Loading';
 import type { RelatedRepo } from '@/types/github';
 
-export default async function RepoPage({ params }: { params: { org: string; repo: string } }) {
+export default async function RepoPage({ params }: { params: Promise<{ org: string; repo: string }> }) {
   const { org, repo } = await params;
   const repoName = `${org}/${repo}`;
 
