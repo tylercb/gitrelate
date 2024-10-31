@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { unstable_cache } from 'next/cache';
 import { buildQuery, fetchDataFromClickHouse } from '@/lib/clickhouse';
 import RepoTable from '@/app/components/RepoTable';
@@ -17,28 +18,30 @@ const getRelatedRepos = unstable_cache(
   { revalidate: ONE_DAY }
 );
 
+function RepoTableWrapper({ repoName }: { repoName: string }) {
+  const relatedReposPromise = getRelatedRepos(repoName);
+
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <RepoTableAsync repoPromise={relatedReposPromise} />
+    </Suspense>
+  );
+}
+
+async function RepoTableAsync({ repoPromise }: { repoPromise: Promise<RelatedRepo[]> }) {
+  const relatedRepos = await repoPromise;
+  return <RepoTable relatedRepos={relatedRepos} />;
+}
+
 export default async function RepoPage({ params }: { params: Promise<{ org: string; repo: string }> }) {
   const { org, repo } = await params;
   const repoName = `${org}/${repo}`;
-
-  let relatedRepos: RelatedRepo[];
-  try {
-    relatedRepos = await getRelatedRepos(repoName);
-  } catch (error) {
-    console.error('Error fetching related repos:', JSON.stringify(error, null, 2));
-    return (
-      <div className="text-center py-8">
-        <h1 className="text-2xl font-bold mb-4">Invalid Repository Name</h1>
-        <p className="text-gray-600">Please check the repository name and try again.</p>
-      </div>
-    );
-  }
 
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6 text-center">Related Repositories for {repoName}</h1>
       <div className="overflow-x-auto shadow-md rounded-lg max-w-screen-lg mx-auto">
-        <RepoTable relatedRepos={relatedRepos} />
+        <RepoTableWrapper repoName={repoName} />
       </div>
     </div>
   );
