@@ -54,9 +54,9 @@ export default function RepoTable({ relatedRepos }: { relatedRepos: RelatedRepo[
                   {repo.repoName}
                 </a>
               </th>
-              <td className="px-6 py-4">{repo.stargazers.toLocaleString()}</td>
-              <td className="px-6 py-4">{repo.forkers.toLocaleString()}</td>
-              <td className="px-6 py-4">{repo.ratio.toFixed(2)}</td>
+              <td className="px-6 py-4">{repo.stargazers?.toLocaleString()}</td>
+              <td className="px-6 py-4">{repo.forkers?.toLocaleString()}</td>
+              <td className="px-6 py-4">{repo.ratio?.toFixed(2)}</td>
             </tr>
           ))}
         </tbody>

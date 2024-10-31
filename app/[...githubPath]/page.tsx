@@ -1,12 +1,8 @@
 import { redirect } from 'next/navigation';
 import { parseGitHubURL } from '@/utils/github';
 
-interface Props {
-  params: { githubPath: string[] };
-}
-
-export default async function GitHubPathPage({ params }: Props) {
-  const { githubPath } = await params;
+export default async function GitHubPathPage({ params }: { params: Promise<{ githubPath: string[] }> }) {
+  const githubPath = (await params).githubPath;
   const fullPath = githubPath.join('/');
   const repoName = parseGitHubURL(`https://github.com/${fullPath}`);
 

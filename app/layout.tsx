@@ -43,7 +43,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 rel="noopener noreferrer"
                 className="underline"
               >
-                "Everything You Ever Wanted To Know About GitHub (But Were Afraid To Ask)"
+                &quot;Everything You Ever Wanted To Know About GitHub (But Were Afraid To Ask)&quot;
               </a>
               , by Alexey Milovidov, 2020. Licensed under CC-BY-4.0 or Apache 2.0 with attribution required.
             </p>

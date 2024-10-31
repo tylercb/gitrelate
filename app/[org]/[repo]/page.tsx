@@ -3,10 +3,6 @@ import { buildQuery, fetchDataFromClickHouse } from '@/lib/clickhouse';
 import RepoTable from '@/app/components/RepoTable';
 import type { RelatedRepo } from '@/types/github';
 
-interface Props {
-  params: { org: string; repo: string };
-}
-
 const ONE_DAY = 60 * 60 * 24;
 
 const getRelatedRepos = unstable_cache(
@@ -21,8 +17,8 @@ const getRelatedRepos = unstable_cache(
   { revalidate: ONE_DAY }
 );
 
-export default async function RepoPage({ params }: Props) {
-  const { org, repo } = params;
+export default async function RepoPage({ params }: { params: Promise<{ org: string; repo: string }> }) {
+  const { org, repo } = await params;
   const repoName = `${org}/${repo}`;
 
   let relatedRepos: RelatedRepo[];
