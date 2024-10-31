@@ -14,7 +14,7 @@ export default function Loading() {
             </div>
           </div>
           <div className="bg-white dark:bg-gray-800">
-            {[...Array(5)].map((_, i) => (
+            {[...Array(10)].map((_, i) => (
               <div
                 key={i}
                 className="border-b border-gray-200 dark:border-gray-700 px-6 py-4"

@@ -1,6 +1,6 @@
-import { getRelatedReposCached as getRelatedRepos } from "@/lib/repos";
-import RepoTable from "@/app/components/RepoTable";
-import type { RelatedRepo } from "@/types/github";
+import { getRelatedReposCached as getRelatedRepos } from '@/lib/repos';
+import RepoTable from '@/app/components/RepoTable';
+import type { RelatedRepo } from '@/types/github';
 
 export default async function RepoPage({
   params,
@@ -12,9 +12,9 @@ export default async function RepoPage({
 
   let relatedRepos: RelatedRepo[];
   try {
-    relatedRepos = await getRelatedRepos(repoName);
+    relatedRepos = await getRelatedRepos(repoName, 0);
   } catch (error) {
-    console.error("Error fetching related repos:", error);
+    console.error('Error fetching related repos:', error);
     return (
       <div className="text-center py-8">
         <h1 className="text-2xl font-bold mb-4">Invalid Repository Name</h1>
@@ -30,9 +30,7 @@ export default async function RepoPage({
       <h1 className="text-3xl font-bold mb-6 text-center">
         Related Repositories for {repoName}
       </h1>
-      <div className="overflow-x-auto shadow-md rounded-lg max-w-screen-lg mx-auto">
-        <RepoTable relatedRepos={relatedRepos} />
-      </div>
+      <RepoTable initialRelatedRepos={relatedRepos} repoName={repoName} />
     </div>
   );
 }

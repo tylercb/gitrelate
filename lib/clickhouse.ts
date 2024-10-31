@@ -9,6 +9,7 @@ import type { RelatedRepo } from '@/types/github';
  * @param {number} minStargazers - Minimum stargazers for inclusion.
  * @param {number} minForkers - Minimum forkers for inclusion.
  * @param {number} minRatio - Minimum star-to-fork ratio.
+ * @param {number} offset - The number of results to skip.
  * @returns {string | null} A SQL query string or null if the input is invalid.
  */
 export const buildQuery = (
@@ -17,7 +18,8 @@ export const buildQuery = (
   orderBy: string,
   minStargazers: number,
   minForkers: number,
-  minRatio: number
+  minRatio: number,
+  offset: number = 0
 ): string | null => {
   const repoName = parseGitHubURL(repoInput);
   if (!repoName) return null;
@@ -46,6 +48,7 @@ export const buildQuery = (
     ${havingClause}
     ORDER BY ${orderBy} DESC
     LIMIT ${limit}
+    OFFSET ${offset}
   `;
 };
 
