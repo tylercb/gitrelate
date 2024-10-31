@@ -35,6 +35,7 @@ export const buildQuery = (
       FROM github_events
       WHERE repo_name = '${repoName}' AND event_type = 'WatchEvent'
       GROUP BY 1
+      LIMIT 150000
     )
     SELECT
       e.repo_name,
@@ -59,6 +60,8 @@ export const buildQuery = (
  */
 export const fetchDataFromClickHouse = async (query: string): Promise<RelatedRepo[]> => {
   const url = 'https://play.clickhouse.com/?user=explorer';
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
   try {
     const response = await fetch(url, {
@@ -67,7 +70,10 @@ export const fetchDataFromClickHouse = async (query: string): Promise<RelatedRep
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: query,
+      signal: controller.signal,
     });
+
+    clearTimeout(timeout);
 
     if (!response.ok) {
       const responseText = await response.text();
@@ -76,6 +82,10 @@ export const fetchDataFromClickHouse = async (query: string): Promise<RelatedRep
     }
 
     const text = await response.text();
+    if (!text.trim()) {
+      return [];
+    }
+
     return text
       .trim()
       .split('\n')
@@ -90,6 +100,10 @@ export const fetchDataFromClickHouse = async (query: string): Promise<RelatedRep
         } as RelatedRepo;
       });
   } catch (error) {
+    clearTimeout(timeout);
+    if (error.name === 'AbortError') {
+      throw new Error('Request timed out. Please try again.');
+    }
     console.error('Error fetching data from ClickHouse:', error);
     throw error;
   }

@@ -1,6 +1,5 @@
 import { getRelatedReposCached as getRelatedRepos } from '@/lib/repos';
 import RepoTable from '@/app/components/RepoTable';
-import type { RelatedRepo } from '@/types/github';
 
 export default async function RepoPage({
   params,
@@ -10,27 +9,45 @@ export default async function RepoPage({
   const { org, repo } = await params;
   const repoName = `${org}/${repo}`;
 
-  let relatedRepos: RelatedRepo[];
   try {
-    relatedRepos = await getRelatedRepos(repoName, 0);
+    const relatedRepos = await getRelatedRepos(repoName, 0);
+
+    if (!relatedRepos.length) {
+      return (
+        <div className="text-center py-8">
+          <h1 className="text-2xl font-bold mb-4">No Related Repositories Found</h1>
+          <p className="text-gray-600">
+            We couldn&apos;t find any related repositories for {repoName}. This could be because:
+          </p>
+          <ul className="list-disc list-inside mt-4 text-gray-600">
+            <li>The repository is too new</li>
+            <li>It has very few stargazers</li>
+            <li>The data is still being processed</li>
+          </ul>
+        </div>
+      );
+    }
+
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold mb-6 text-center">
+          Related Repositories for {repoName}
+        </h1>
+        <RepoTable initialRelatedRepos={relatedRepos} repoName={repoName} />
+      </div>
+    );
   } catch (error) {
-    console.error('Error fetching related repos:', error);
+    const err = error as Error;
+    console.error('Error fetching related repos:', err);
     return (
       <div className="text-center py-8">
-        <h1 className="text-2xl font-bold mb-4">Invalid Repository Name</h1>
+        <h1 className="text-2xl font-bold mb-4">Error Loading Data</h1>
         <p className="text-gray-600">
-          Please check the repository name and try again.
+          {err.message === 'Request timed out. Please try again.'
+            ? 'The request took too long to complete. Please try again or try a different repository.'
+            : 'There was an error loading the related repositories. Please try again later.'}
         </p>
       </div>
     );
   }
-
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6 text-center">
-        Related Repositories for {repoName}
-      </h1>
-      <RepoTable initialRelatedRepos={relatedRepos} repoName={repoName} />
-    </div>
-  );
 }
