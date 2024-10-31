@@ -51,3 +51,7 @@ export default async function RepoPage({
     );
   }
 }
+
+export const config = {
+  maxDuration: 30,
+};
