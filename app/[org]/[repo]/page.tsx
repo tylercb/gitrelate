@@ -1,47 +1,33 @@
 import { Suspense } from 'react';
-import { unstable_cache } from 'next/cache';
-import { buildQuery, fetchDataFromClickHouse } from '@/lib/clickhouse';
+import { getRelatedReposCached as getRelatedRepos } from '@/lib/repos';
 import RepoTable from '@/app/components/RepoTable';
+import Loading from '@/app/components/Loading';
 import type { RelatedRepo } from '@/types/github';
 
-const ONE_DAY = 60 * 60 * 24;
-
-const getRelatedRepos = unstable_cache(
-  async (repoName: string) => {
-    const query = buildQuery(repoName, 100, 'stargazers', 0, 0, 0);
-    if (!query) {
-      throw new Error('Invalid repository name');
-    }
-    return await fetchDataFromClickHouse(query);
-  },
-  ['related-repos'],
-  { revalidate: ONE_DAY }
-);
-
-function RepoTableWrapper({ repoName }: { repoName: string }) {
-  const relatedReposPromise = getRelatedRepos(repoName);
-
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <RepoTableAsync repoPromise={relatedReposPromise} />
-    </Suspense>
-  );
-}
-
-async function RepoTableAsync({ repoPromise }: { repoPromise: Promise<RelatedRepo[]> }) {
-  const relatedRepos = await repoPromise;
-  return <RepoTable relatedRepos={relatedRepos} />;
-}
-
-export default async function RepoPage({ params }: { params: Promise<{ org: string; repo: string }> }) {
+export default async function RepoPage({ params }: { params: { org: string; repo: string } }) {
   const { org, repo } = await params;
   const repoName = `${org}/${repo}`;
+
+  let relatedRepos: RelatedRepo[];
+  try {
+    relatedRepos = await getRelatedRepos(repoName);
+  } catch (error) {
+    console.error('Error fetching related repos:', error);
+    return (
+      <div className="text-center py-8">
+        <h1 className="text-2xl font-bold mb-4">Invalid Repository Name</h1>
+        <p className="text-gray-600">Please check the repository name and try again.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6 text-center">Related Repositories for {repoName}</h1>
       <div className="overflow-x-auto shadow-md rounded-lg max-w-screen-lg mx-auto">
-        <RepoTableWrapper repoName={repoName} />
+        <Suspense fallback={<Loading />}>
+          <RepoTable relatedRepos={relatedRepos} />
+        </Suspense>
       </div>
     </div>
   );
