@@ -59,7 +59,3 @@ export async function generateMetadata({ params }: { params: Promise<{ org: stri
     title: `${repoName} Related Repos - GitRelate(d)`,
   };
 }
-
-export const config = {
-  maxDuration: 30,
-};
