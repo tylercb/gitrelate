@@ -52,6 +52,14 @@ export default async function RepoPage({
   }
 }
 
+export async function generateMetadata({ params }: { params: Promise<{ org: string; repo: string }> }) {
+  const { org, repo } = await params;
+  const repoName = `${org}/${repo}`;
+  return {
+    title: `${repoName} Related Repos - GitRelate(d)`,
+  };
+}
+
 export const config = {
   maxDuration: 30,
 };
