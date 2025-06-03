@@ -9,14 +9,20 @@ export const parseGitHubURL = (input: string): string | null => {
     if (url.hostname === 'github.com' || url.hostname === 'www.github.com') {
       const pathSegments = url.pathname.split('/').filter(Boolean);
       if (pathSegments.length >= 2) {
-        const [owner, repo] = pathSegments;
+        const [owner, repoSegment] = pathSegments;
+        const repo = repoSegment.replace(/\.git$/, '');
         return `${owner}/${repo}`;
       }
     }
   } catch {
     // Direct "org/repo" input without full URL
     const match = input.match(/^([^/]+)\/([^/]+)$/);
-    return match ? input : null;
+    if (match) {
+      const [, owner, repoSegment] = match;
+      const repo = repoSegment.replace(/\.git$/, '');
+      return `${owner}/${repo}`;
+    }
+    return null;
   }
   return null;
 };
