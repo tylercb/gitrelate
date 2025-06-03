@@ -133,7 +133,7 @@ LIMIT 50
 
 This is the perfect exploration tool for related repositories!
 
-### Finding friends through county stars:
+### Finding friends through counting stars:
 
 Let me find a friend by the intersection on starred repositories.
 
