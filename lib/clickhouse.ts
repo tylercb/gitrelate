@@ -56,8 +56,8 @@ export const buildQuery = (
 /**
  * Fetches data from ClickHouse using the generated SQL query.
  * @param {string} query - The SQL query to execute.
- * @returns {Promise<any[]>} - The response data as an array of results.
- */
+ * @returns {Promise<RelatedRepo[]>} - The response data as an array of results.
+*/
 export const fetchDataFromClickHouse = async (query: string): Promise<RelatedRepo[]> => {
   const url = 'https://play.clickhouse.com/?user=explorer';
   const controller = new AbortController();
