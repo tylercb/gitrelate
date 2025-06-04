@@ -26,7 +26,13 @@ Create an `.env` file to set the GitHub token for authenticated API requests (to
 
 ```
 GITHUB_TOKEN=your_github_token_here
+NEXT_PUBLIC_USE_CLIENT_CLICKHOUSE=true
 ```
+
+Set `NEXT_PUBLIC_USE_CLIENT_CLICKHOUSE` to `true` to fetch ClickHouse data
+directly from the browser instead of the server. This reduces server load
+and provides faster navigation between pages, but queries may take longer
+on the initial page load as they run directly in the browser.
 
 ## Update node packages
 
@@ -147,7 +153,7 @@ LIMIT 50
 
 This is the perfect exploration tool for related repositories!
 
-### Finding friends through county stars:
+### Finding friends through counting stars:
 
 Let me find a friend by the intersection on starred repositories.
 

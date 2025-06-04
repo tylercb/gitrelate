@@ -1,27 +1,26 @@
-
-import { unstable_cache } from 'next/cache';
-import { buildQuery, fetchDataFromClickHouse } from '@/lib/clickhouse';
+import { buildQuery, fetchDataFromClickHouse } from "@/lib/clickhouse";
+import { unstable_cache } from "next/cache";
 
 const ONE_DAY = 60 * 60 * 24;
 
 export function getRelatedReposCached(repoName: string, offset: number) {
   return unstable_cache(
     async () => {
-      const query = buildQuery(repoName, 100, 'stargazers', 0, 0, 0, offset);
+      const query = buildQuery(repoName, 100, "stargazers", 0, 0, 0, offset);
       if (!query) {
-        throw new Error('Invalid repository name');
+        throw new Error("Invalid repository name");
       }
       return await fetchDataFromClickHouse(query);
     },
-    ['related-repos', repoName, offset.toString()],
+    ["related-repos", repoName, offset.toString()],
     { revalidate: ONE_DAY }
   )();
 }
 
 export const getRelatedReposUncached = async (repoName: string) => {
-  const query = buildQuery(repoName, 100, 'stargazers', 0, 0, 0);
+  const query = buildQuery(repoName, 100, "stargazers", 0, 0, 0);
   if (!query) {
-    throw new Error('Invalid repository name');
+    throw new Error("Invalid repository name");
   }
   return await fetchDataFromClickHouse(query);
 };

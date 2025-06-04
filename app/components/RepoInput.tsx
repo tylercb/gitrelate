@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { parseGitHubURL } from '@/utils/github';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { parseGitHubURL } from "@/utils/github";
 
 export default function RepoInput() {
-  const [repo, setRepo] = useState('');
+  const [repo, setRepo] = useState("");
   const router = useRouter();
 
   const handleSearch = () => {
@@ -18,7 +18,7 @@ export default function RepoInput() {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' || e.key === 'NumpadEnter') {
+    if (e.key === "Enter" || e.key === "NumpadEnter") {
       handleSearch();
     }
   };

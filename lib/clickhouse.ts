@@ -1,5 +1,5 @@
-import { parseGitHubURL } from '@/utils/github';
-import type { RelatedRepo } from '@/types/github';
+import type { RelatedRepo } from "@/types/github";
+import { parseGitHubURL } from "@/utils/github";
 
 /**
  * Builds a SQL query to retrieve data for a GitHub repository's related repositories.
@@ -24,7 +24,7 @@ export const buildQuery = (
   const repoName = parseGitHubURL(repoInput);
   if (!repoName) return null;
 
-  let havingClause = 'HAVING 1=1';
+  let havingClause = "HAVING 1=1";
   if (minStargazers) havingClause += ` AND stargazers >= ${minStargazers}`;
   if (minForkers) havingClause += ` AND forkers >= ${minForkers}`;
   if (minRatio) havingClause += ` AND ratio >= ${minRatio}`;
@@ -56,18 +56,20 @@ export const buildQuery = (
 /**
  * Fetches data from ClickHouse using the generated SQL query.
  * @param {string} query - The SQL query to execute.
- * @returns {Promise<any[]>} - The response data as an array of results.
+ * @returns {Promise<RelatedRepo[]>} - The response data as an array of results.
  */
-export const fetchDataFromClickHouse = async (query: string): Promise<RelatedRepo[]> => {
-  const url = 'https://play.clickhouse.com/?user=explorer';
+export const fetchDataFromClickHouse = async (
+  query: string
+): Promise<RelatedRepo[]> => {
+  const url = "https://play.clickhouse.com/?user=explorer";
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
   try {
     const response = await fetch(url, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+        "Content-Type": "application/x-www-form-urlencoded",
       },
       body: query,
       signal: controller.signal,
@@ -77,7 +79,7 @@ export const fetchDataFromClickHouse = async (query: string): Promise<RelatedRep
 
     if (!response.ok) {
       const responseText = await response.text();
-      console.error('ClickHouse error response:', responseText);
+      console.error("ClickHouse error response:", responseText);
       throw new Error(`ClickHouse responded with status: ${response.status}`);
     }
 
@@ -88,23 +90,23 @@ export const fetchDataFromClickHouse = async (query: string): Promise<RelatedRep
 
     return text
       .trim()
-      .split('\n')
+      .split("\n")
       .map((row: string) => {
-        const [repoName, stargazers, forkers, ratio] = row.split('\t');
+        const [repoName, stargazers, forkers, ratio] = row.split("\t");
         return {
           repoName,
           githubUrl: `https://github.com/${repoName}`,
           stargazers: parseInt(stargazers, 10),
           forkers: parseInt(forkers, 10),
-          ratio: ratio !== '\\N' ? parseFloat(ratio) : null,
+          ratio: ratio !== "\\N" ? parseFloat(ratio) : null,
         } as RelatedRepo;
       });
   } catch (error) {
     clearTimeout(timeout);
-    if (error instanceof Error && error.name === 'AbortError') {
-      throw new Error('Request timed out. Please try again.');
+    if (error instanceof Error && error.name === "AbortError") {
+      throw new Error("Request timed out. Please try again.");
     }
-    console.error('Error fetching data from ClickHouse:', error);
+    console.error("Error fetching data from ClickHouse:", error);
     throw error;
   }
 };
