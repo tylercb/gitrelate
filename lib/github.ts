@@ -1,4 +1,4 @@
-const GITHUB_API = 'https://api.github.com';
+const GITHUB_API = "https://api.github.com";
 
 export async function getStargazers(repo: string) {
   const response = await fetch(`${GITHUB_API}/repos/${repo}/stargazers`, {

@@ -1,14 +1,18 @@
-import { redirect } from 'next/navigation';
-import { parseGitHubURL } from '@/utils/github';
+import { redirect } from "next/navigation";
+import { parseGitHubURL } from "@/utils/github";
 
-export default async function GitHubPathPage({ params }: { params: Promise<{ githubPath: string[] }> }) {
+export default async function GitHubPathPage({
+  params,
+}: {
+  params: Promise<{ githubPath: string[] }>;
+}) {
   const githubPath = (await params).githubPath;
-  const fullPath = githubPath.join('/');
+  const fullPath = githubPath.join("/");
   const repoName = parseGitHubURL(`https://github.com/${fullPath}`);
 
   if (repoName) {
     // Split the repo name into org and repo components and redirect to the correct route
-    const [org, repo] = repoName.split('/');
+    const [org, repo] = repoName.split("/");
     return redirect(`/${org}/${repo}`);
   }
 
