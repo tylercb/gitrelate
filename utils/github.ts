@@ -4,8 +4,14 @@
  * @returns {string | null} The parsed repository name or null if the URL is invalid.
  */
 export const parseGitHubURL = (input: string): string | null => {
+  // If the input looks like a github.com URL but is missing a protocol,
+  // prepend https:// so URL parsing succeeds.
+  const normalized = /^(?:www\.)?github\.com\//.test(input)
+    ? `https://${input.replace(/^https?:\/\//, "")}`
+    : input;
+
   try {
-    const url = new URL(input);
+    const url = new URL(normalized);
     if (url.hostname === "github.com" || url.hostname === "www.github.com") {
       const pathSegments = url.pathname.split("/").filter(Boolean);
       if (pathSegments.length >= 2) {
