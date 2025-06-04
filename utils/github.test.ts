@@ -75,6 +75,10 @@ describe("parseGitHubURL", () => {
     expect(parseGitHubURL("http://github.com/owner/repo")).toBe("owner/repo");
   });
 
+  it("parses URLs without protocol", () => {
+    expect(parseGitHubURL("github.com/owner/repo")).toBe("owner/repo");
+  });
+
   it("handles repos with dots in name", () => {
     expect(parseGitHubURL("owner/repo.name")).toBe("owner/repo.name");
   });
