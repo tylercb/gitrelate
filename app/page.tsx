@@ -28,9 +28,9 @@ export const metadata: Metadata = {
     locale: "en_US",
     images: [
       {
-        url: "https://gitrelated.com/og-image.png",
+        url: "https://opengraph.githubassets.com/e77a7573cf968b6970ec190e2284ed4e6bd8211dc918487aec0ab1ae717f189a/tylercb/gitrelate",
         width: 1200,
-        height: 630,
+        height: 600,
         alt: "GitRelate(d) - Find Related GitHub Repositories",
       },
     ],
