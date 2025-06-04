@@ -9,23 +9,23 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@headlessui/react": "^2.2.0",
+    "@headlessui/react": "^2.2.4",
     "clsx": "^2.1.1",
-    "lucide-react": "^0.454.0",
-    "next": "15.2.3",
-    "next-themes": "^0.3.0",
-    "react": "19.0.0-rc-02c0e824-20241028",
-    "react-dom": "19.0.0-rc-02c0e824-20241028",
-    "tailwind-merge": "^2.5.4"
+    "lucide-react": "^0.512.0",
+    "next": "15.4.0",
+    "next-themes": "^0.4.6",
+    "react": "19.2.0-canary-f9ae0a4c-20250527",
+    "react-dom": "19.2.0-canary-f9ae0a4c-20250527",
+    "tailwind-merge": "^2.6.0"
   },
   "devDependencies": {
-    "typescript": "^5",
-    "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
-    "postcss": "^8",
-    "tailwindcss": "^3.4.1",
+    "typescript": "^5.8.3",
+    "@types/node": "^22",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "postcss": "^8.5.4",
+    "tailwindcss": "^3.4.17",
     "eslint": "^8",
-    "eslint-config-next": "15.0.2"
+    "eslint-config-next": "15.3.3"
   }
 }
