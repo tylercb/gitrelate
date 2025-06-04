@@ -75,8 +75,6 @@ export const fetchDataFromClickHouse = async (
       signal: controller.signal,
     });
 
-    clearTimeout(timeout);
-
     if (!response.ok) {
       const responseText = await response.text();
       console.error("ClickHouse error response:", responseText);
@@ -91,6 +89,7 @@ export const fetchDataFromClickHouse = async (
     return text
       .trim()
       .split("\n")
+      .filter(Boolean)
       .map((row: string) => {
         const [repoName, stargazers, forkers, ratio] = row.split("\t");
         return {
@@ -102,11 +101,12 @@ export const fetchDataFromClickHouse = async (
         } as RelatedRepo;
       });
   } catch (error) {
-    clearTimeout(timeout);
     if (error instanceof Error && error.name === "AbortError") {
       throw new Error("Request timed out. Please try again.");
     }
     console.error("Error fetching data from ClickHouse:", error);
     throw error;
+  } finally {
+    clearTimeout(timeout);
   }
 };

@@ -215,5 +215,34 @@ describe("ClickHouse utilities", () => {
       expect(typeof result[0].forkers).toBe("number");
       expect(typeof result[0].ratio).toBe("number");
     });
+
+    it("filters out empty lines in response", async () => {
+      const mockResponse =
+        "owner/repo1\t100\t50\t2.0\n\n\nowner/repo2\t200\t100\t2.0\n\n";
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        text: async () => mockResponse,
+      });
+
+      const result = await fetchDataFromClickHouse("SELECT * FROM test");
+
+      expect(result).toEqual([
+        {
+          repoName: "owner/repo1",
+          githubUrl: "https://github.com/owner/repo1",
+          stargazers: 100,
+          forkers: 50,
+          ratio: 2.0,
+        },
+        {
+          repoName: "owner/repo2",
+          githubUrl: "https://github.com/owner/repo2",
+          stargazers: 200,
+          forkers: 100,
+          ratio: 2.0,
+        },
+      ]);
+    });
   });
 });
