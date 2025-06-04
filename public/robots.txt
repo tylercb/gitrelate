@@ -1,5 +1,14 @@
 User-agent: *
-Disallow: /
+Allow: /
+Allow: /robots.txt
+Allow: /favicon.ico
+Allow: /*.svg
+Allow: /*.png
+Allow: /*.jpg
+Allow: /*.jpeg
+Allow: /*.webp
+Allow: /*.ico
+Disallow: /*/
 
-# Block all crawlers to reduce function invocations
-# This includes Google, Bing, social media crawlers, etc. 
+# Allow index page and static assets, block dynamic repository pages
+# This reduces server load from crawlers hitting thousands of repo pages

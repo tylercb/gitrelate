@@ -1,5 +1,52 @@
 import Link from "next/link";
 import RepoInput from "@/app/components/RepoInput";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "GitRelate(d) - Find Related GitHub Repositories",
+  description:
+    "Discover GitHub repositories related to any repo based on users who starred them. Replace github.com with gitrelate.com in any repository URL to find similar projects and explore new tools.",
+  keywords: [
+    "github",
+    "repositories",
+    "related repos",
+    "github discovery",
+    "open source",
+    "code discovery",
+    "developer tools",
+  ],
+  alternates: {
+    canonical: "https://gitrelated.com/",
+  },
+  openGraph: {
+    title: "GitRelate(d) - Find Related GitHub Repositories",
+    description:
+      "Discover GitHub repositories related to any repo based on users who starred them. Replace github.com with gitrelate.com to find similar projects.",
+    url: "https://gitrelated.com/",
+    siteName: "GitRelate(d)",
+    type: "website",
+    locale: "en_US",
+    images: [
+      {
+        url: "https://gitrelated.com/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "GitRelate(d) - Find Related GitHub Repositories",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary",
+    title: "GitRelate(d) - Find Related GitHub Repositories",
+    description:
+      "Discover GitHub repositories related to any repo based on users who starred them. Replace github.com with gitrelate.com to find similar projects.",
+    creator: "@tylerhanway",
+  },
+  robots: {
+    index: true,
+    follow: false,
+  },
+};
 
 export default function HomePage() {
   return (
@@ -13,7 +60,7 @@ export default function HomePage() {
         <span className="font-mono text-gray-600 dark:text-gray-400">
           github.com
         </span>{" "}
-        in any repo’s URL with{" "}
+        in any repo&apos;s URL with{" "}
         <span className="font-mono text-gray-600 dark:text-gray-400">
           gitrelate.com
         </span>{" "}

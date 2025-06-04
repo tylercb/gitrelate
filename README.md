@@ -1,5 +1,3 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
-
 ## Getting Started
 
 Install node v20+, bun v1.2+, then install package dependencies:
@@ -16,23 +14,22 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
 ## Environment Variables
 
-Create an `.env` file to set the GitHub token for authenticated API requests (to avoid rate limits):
+Create a `.env.local` file with the following variables:
 
-```
-GITHUB_TOKEN=your_github_token_here
+```bash
+# Client-side ClickHouse fetching (optional)
 NEXT_PUBLIC_USE_CLIENT_CLICKHOUSE=true
+
+# GitHub API access (optional - for rate limiting)
+GITHUB_TOKEN=your_github_personal_access_token_here
 ```
 
-Set `NEXT_PUBLIC_USE_CLIENT_CLICKHOUSE` to `true` to fetch ClickHouse data
-directly from the browser instead of the server. This reduces server load
-and provides faster navigation between pages, but queries may take longer
-on the initial page load as they run directly in the browser.
+### Environment Variable Details:
+
+- `NEXT_PUBLIC_USE_CLIENT_CLICKHOUSE`: Set to `true` to fetch ClickHouse data directly from the browser instead of the server. This reduces server load and provides faster navigation between pages.
+- `GITHUB_TOKEN`: Optional GitHub personal access token to increase API rate limits when fetching repository metadata.
 
 ## Update node packages
 
@@ -46,52 +43,6 @@ To update packages:
 
 ```bash
 bunx npm-check-updates --interactive --format group --packageManager=bun --target minor
-```
-
-## Folder Structure
-
-```
-/gitrelate
-  /app
-    /[repo]          # Dynamic route for repository-related pages
-    /api             # API routes for GitHub API interactions
-    /components      # Reusable components for displaying repo data
-    /layout.tsx      # Layout with shared elements like header/footer
-    /page.tsx        # Home page for inputting GitHub repo URL
-  /lib               # Utility functions for GitHub data fetching
-  /types             # Type definitions for GitHub API responses
-```
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-
-## Prompt
-
-```
-I'm building a repository discovery tool using Next.js and React Server Components, where users can input a GitHub repository URL to see related repositories. This project uses both the GitHub API and the BigQuery public dataset called GH Archive for accessing GitHub event data. Here are the core requirements and setup:
-
-  1. GitHub API and GH Archive on BigQuery: The tool will use the GitHub API to access real-time stargazers and starred repositories for live data. For deeper analysis and history, the tool will query the GH Archive dataset on Google BigQuery, which is updated hourly, to find repositories with shared stargazers, similar contributions, or overlapping topics.
-
-  2. Technical Requirements:
-
-     a. Built with Next.js (version 15) and React Server Components for optimized server-rendered pages.
-     b. The project will use Bun as the runtime environment.
-     c. Key components include:
-        - A utility function to query the GitHub API and BigQuery dataset.
-        - A React Server Component to render the list of related repositories based on data from these sources.
-        - An optional API route to handle data fetching logic if needed.
-
-  3. Data Flow:
-
-     a. Users enter a GitHub repository URL, and the tool uses the GitHub API and GH Archive to fetch data.
-     b. The React Server Component displays a list of related repositories based on shared stars, topics, or contributions.
-
-  4. Goal: To build a seamless experience for discovering repositories connected by shared interests and contributions, leveraging both live and historical data.
-
-Please help with guidance, example code, or improvements for using GitHub's API and BigQuery in this setup, especially focusing on optimal data fetching patterns, performance considerations, and any best practices for handling rate limits with the GitHub API.
 ```
 
 ## GitHub Event Type:
