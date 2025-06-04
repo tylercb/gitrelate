@@ -26,7 +26,11 @@ Create an `.env` file to set the GitHub token for authenticated API requests (to
 
 ```
 GITHUB_TOKEN=your_github_token_here
+NEXT_PUBLIC_USE_CLIENT_CLICKHOUSE=false
 ```
+
+Set `NEXT_PUBLIC_USE_CLIENT_CLICKHOUSE` to `true` to fetch ClickHouse data
+directly from the browser instead of the server.
 
 ## Folder Structure
 

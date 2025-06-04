@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ArrowUpDown, Search } from 'lucide-react';
 import Link from 'next/link';
 import type { RelatedRepo } from '@/types/github';
 import { fetchMoreRelatedRepos } from '@/app/actions';
+import { getRelatedReposClient } from '@/lib/repos.client';
 // import RepoFilter from './RepoFilter';
 
 export default function RepoTable({
@@ -19,6 +20,20 @@ export default function RepoTable({
   const [offset, setOffset] = useState<number>(initialRelatedRepos?.length || 0);
   const [loadingMore, setLoadingMore] = useState<boolean>(false);
   const [hasMore, setHasMore] = useState<boolean>(true);
+
+  const useClient = process.env.NEXT_PUBLIC_USE_CLIENT_CLICKHOUSE === 'true';
+
+  useEffect(() => {
+    if (useClient && repoName && relatedRepos.length === 0) {
+      getRelatedReposClient(repoName, 0)
+        .then((data) => {
+          setRelatedRepos(data);
+          setOffset(data.length);
+          if (data.length < 100) setHasMore(false);
+        })
+        .catch((err) => console.error('Error fetching repos:', err));
+    }
+  }, [useClient, repoName, relatedRepos.length]);
 
   const [sortColumn, setSortColumn] = useState<keyof RelatedRepo>('stargazers');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
@@ -78,7 +93,9 @@ export default function RepoTable({
   const handleShowMore = async () => {
     setLoadingMore(true);
     try {
-      const moreRepos = await fetchMoreRelatedRepos(repoName, offset);
+      const moreRepos = useClient
+        ? await getRelatedReposClient(repoName, offset)
+        : await fetchMoreRelatedRepos(repoName, offset);
       if (moreRepos.length === 0 || moreRepos.length < 100) {
         setHasMore(false);
       }

@@ -9,6 +9,19 @@ export default async function RepoPage({
   const { org, repo } = await params;
   const repoName = `${org}/${repo}`;
 
+  const useClient = process.env.NEXT_PUBLIC_USE_CLIENT_CLICKHOUSE === 'true';
+
+  if (useClient) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold mb-6 text-center">
+          Related Repositories for {repoName}
+        </h1>
+        <RepoTable initialRelatedRepos={[]} repoName={repoName} />
+      </div>
+    );
+  }
+
   try {
     const relatedRepos = await getRelatedRepos(repoName, 0);
 
