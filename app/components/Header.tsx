@@ -8,6 +8,7 @@ export default function Header() {
           <Link
             className="hover:underline text-gray-800 dark:text-gray-200"
             href="/"
+            prefetch={false}
           >
             GitRelate(d)
           </Link>

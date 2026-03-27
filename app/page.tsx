@@ -76,11 +76,11 @@ export default function HomePage() {
           Works best with obscure niches with less than 1,000 stargazers. Repos
           with many stargazers can take up to 30 seconds to load the ClickHouse
           data and may return less relevant results. Try{" "}
-          <Link href="/mattiasthalen/ducklake" className="underline">
+          <Link href="/mattiasthalen/ducklake" prefetch={false} className="underline">
             mattiasthalen/ducklake
           </Link>{" "}
           or{" "}
-          <Link href="/matsonj/nba-monte-carlo" className="underline">
+          <Link href="/matsonj/nba-monte-carlo" prefetch={false} className="underline">
             matsonj/nba-monte-carlo
           </Link>
           .

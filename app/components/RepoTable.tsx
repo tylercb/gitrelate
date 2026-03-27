@@ -262,7 +262,7 @@ export default function RepoTable({
                         </a>
                         <Link
                           href={`/${repo.repoName}`}
-                          passHref
+                          prefetch={false}
                           className="p-2 pl-1"
                           title="View related repos"
                         >
