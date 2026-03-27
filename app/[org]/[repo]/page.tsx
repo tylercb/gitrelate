@@ -1,6 +1,9 @@
 import { getRelatedReposCached as getRelatedRepos } from "@/lib/repos";
 import RepoTable from "@/app/components/RepoTable";
 
+// Cache rendered pages for 24 hours via ISR to reduce edge function invocations
+export const revalidate = 86400;
+
 export default async function RepoPage({
   params,
 }: {

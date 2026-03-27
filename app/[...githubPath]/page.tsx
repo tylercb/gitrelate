@@ -2,6 +2,9 @@ import React from "react";
 import { redirect } from "next/navigation";
 import { parseGitHubURL } from "@/utils/github";
 
+// Cache redirect responses for 24 hours to reduce edge function invocations
+export const revalidate = 86400;
+
 export default async function GitHubPathPage({
   params,
 }: {
