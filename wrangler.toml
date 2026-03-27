@@ -1,0 +1,9 @@
+name = "gitrelate"
+main = ".open-next/worker.js"
+compatibility_date = "2025-04-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Static assets served from Cloudflare's edge
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
