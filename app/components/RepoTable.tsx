@@ -43,22 +43,21 @@ export default function RepoTable({ repoName = "" }: { repoName?: string }) {
   const [relatedRepos, setRelatedRepos] = useState<RelatedRepo[]>([]);
   // const [filteredRepos, setFilteredRepos] = useState<RelatedRepo[]>([]);
   const [offset, setOffset] = useState<number>(0);
-  const [initialLoading, setInitialLoading] = useState<boolean>(false);
+  // Tracked separately from the results, because a loaded repo can have none
+  const [initialLoading, setInitialLoading] = useState<boolean>(
+    Boolean(repoName)
+  );
   const [loadingMore, setLoadingMore] = useState<boolean>(false);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
-
-  // Determine if we should show loading initially
-  const shouldShowInitialLoading =
-    repoName && relatedRepos.length === 0 && !error;
+  // Incremented to run the initial fetch again after an error
+  const [attempt, setAttempt] = useState<number>(0);
 
   useEffect(() => {
     // Clear expired cache entries on component mount
     clearExpiredCache();
 
-    if (repoName && relatedRepos.length === 0) {
-      setInitialLoading(true);
-      setError("");
+    if (repoName) {
       getRelatedReposClient(repoName, 0)
         .then((data) => {
           setRelatedRepos(data);
@@ -73,7 +72,7 @@ export default function RepoTable({ repoName = "" }: { repoName?: string }) {
           setInitialLoading(false);
         });
     }
-  }, [repoName, relatedRepos.length]);
+  }, [repoName, attempt]);
 
   const [sortColumn, setSortColumn] = useState<keyof RelatedRepo>("stargazers");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
@@ -149,7 +148,7 @@ export default function RepoTable({ repoName = "" }: { repoName?: string }) {
   };
 
   // Show loading state for initial client-side fetch
-  if (initialLoading || shouldShowInitialLoading) {
+  if (initialLoading) {
     return <RepoTableSkeleton />;
   }
 
@@ -164,8 +163,8 @@ export default function RepoTable({ repoName = "" }: { repoName?: string }) {
         <button
           onClick={() => {
             setError("");
-            setRelatedRepos([]);
-            setOffset(0);
+            setInitialLoading(true);
+            setAttempt((prev) => prev + 1);
           }}
           className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
         >
