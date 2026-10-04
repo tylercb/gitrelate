@@ -13,12 +13,8 @@
 # testing
 /coverage
 
-# next.js
-/.next/
-/out/
-
 # production
-/build
+/dist/
 
 # misc
 .DS_Store
@@ -33,9 +29,9 @@ yarn-error.log*
 .env*
 !.env.example
 
-# vercel
-.vercel
+# cloudflare
+.wrangler
+.dev.vars*
 
 # typescript
 *.tsbuildinfo
-next-env.d.ts

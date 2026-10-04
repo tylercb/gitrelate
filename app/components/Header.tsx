@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "react-router";
 
 export default function Header() {
   return (
@@ -7,7 +7,7 @@ export default function Header() {
         <h1 className="text-2xl md:text-3xl font-bold text-center my-0">
           <Link
             className="hover:underline text-gray-800 dark:text-gray-200"
-            href="/"
+            to="/"
           >
             GitRelate(d)
           </Link>

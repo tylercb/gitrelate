@@ -1,15 +1,12 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import { ArrowUpDown, Search } from "lucide-react";
-import Link from "next/link";
+import { Link } from "react-router";
 import type { RelatedRepo } from "@/types/github";
-import { fetchMoreRelatedRepos } from "@/app/actions";
 import { getRelatedReposClient, clearExpiredCache } from "@/lib/repos.client";
 import { Skeleton } from "@/app/components/Skeleton";
 // import RepoFilter from './RepoFilter';
 
-// Loading skeleton component for the repo table that matches the server-side loading
+// Loading skeleton component for the repo table
 function RepoTableSkeleton() {
   return (
     // <div className="container mx-auto px-4 py-8">
@@ -42,41 +39,24 @@ function RepoTableSkeleton() {
   );
 }
 
-export default function RepoTable({
-  initialRelatedRepos = [],
-  repoName = "",
-}: {
-  initialRelatedRepos?: RelatedRepo[];
-  repoName?: string;
-}) {
-  const [relatedRepos, setRelatedRepos] =
-    useState<RelatedRepo[]>(initialRelatedRepos);
-  // const [filteredRepos, setFilteredRepos] = useState<RelatedRepo[]>(initialRelatedRepos);
-  const [offset, setOffset] = useState<number>(
-    initialRelatedRepos?.length || 0
-  );
+export default function RepoTable({ repoName = "" }: { repoName?: string }) {
+  const [relatedRepos, setRelatedRepos] = useState<RelatedRepo[]>([]);
+  // const [filteredRepos, setFilteredRepos] = useState<RelatedRepo[]>([]);
+  const [offset, setOffset] = useState<number>(0);
   const [initialLoading, setInitialLoading] = useState<boolean>(false);
   const [loadingMore, setLoadingMore] = useState<boolean>(false);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
 
-  const useClient = process.env.NEXT_PUBLIC_USE_CLIENT_CLICKHOUSE === "true";
-
   // Determine if we should show loading initially
   const shouldShowInitialLoading =
-    useClient &&
-    repoName &&
-    initialRelatedRepos.length === 0 &&
-    relatedRepos.length === 0 &&
-    !error;
+    repoName && relatedRepos.length === 0 && !error;
 
   useEffect(() => {
-    // Clear expired cache entries on component mount when using client-side fetching
-    if (useClient) {
-      clearExpiredCache();
-    }
+    // Clear expired cache entries on component mount
+    clearExpiredCache();
 
-    if (useClient && repoName && relatedRepos.length === 0) {
+    if (repoName && relatedRepos.length === 0) {
       setInitialLoading(true);
       setError("");
       getRelatedReposClient(repoName, 0)
@@ -93,7 +73,7 @@ export default function RepoTable({
           setInitialLoading(false);
         });
     }
-  }, [useClient, repoName, relatedRepos.length]);
+  }, [repoName, relatedRepos.length]);
 
   const [sortColumn, setSortColumn] = useState<keyof RelatedRepo>("stargazers");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
@@ -153,9 +133,7 @@ export default function RepoTable({
   const handleShowMore = async () => {
     setLoadingMore(true);
     try {
-      const moreRepos = useClient
-        ? await getRelatedReposClient(repoName, offset)
-        : await fetchMoreRelatedRepos(repoName, offset);
+      const moreRepos = await getRelatedReposClient(repoName, offset);
       if (moreRepos.length === 0 || moreRepos.length < 100) {
         setHasMore(false);
       }
@@ -261,8 +239,7 @@ export default function RepoTable({
                           {repo.repoName}
                         </a>
                         <Link
-                          href={`/${repo.repoName}`}
-                          passHref
+                          to={`/${repo.repoName}`}
                           className="p-2 pl-1"
                           title="View related repos"
                         >

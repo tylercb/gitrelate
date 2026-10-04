@@ -1,0 +1,10 @@
+# Cloudflare static asset headers
+# https://developers.cloudflare.com/workers/static-assets/headers/
+
+# Discourage bots and crawlers
+/*
+  X-Robots-Tag: noindex, nofollow, nosnippet, noarchive, noimageindex
+
+# Vite content-hashes these filenames, so they can be cached indefinitely
+/_assets/*
+  Cache-Control: public, max-age=31536000, immutable

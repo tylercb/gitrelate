@@ -1,0 +1,23 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "gitrelate",
+  "compatibility_date": "2026-10-04",
+  // Assets-only Worker: with no Worker script, every request is served as a
+  // static asset, which Cloudflare does not bill or rate limit
+  "assets": {
+    "directory": "./dist",
+    // Serve index.html for /org/repo paths so the client-side router handles them
+    "not_found_handling": "single-page-application"
+  },
+  // Each route needs its zone to be active in the same Cloudflare account, with
+  // a proxied DNS record for the hostname. The record's target is never
+  // contacted because the Worker answers every request.
+  "routes": [
+    { "pattern": "gitrelated.com/*", "zone_name": "gitrelated.com" },
+    { "pattern": "www.gitrelated.com/*", "zone_name": "gitrelated.com" },
+    { "pattern": "gitrelate.com/*", "zone_name": "gitrelate.com" },
+    { "pattern": "www.gitrelate.com/*", "zone_name": "gitrelate.com" }
+  ],
+  // Keep the workers.dev URL as a way to check a deploy independently of DNS
+  "workers_dev": true
+}
