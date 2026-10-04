@@ -24,7 +24,9 @@ Preview the production build locally in the Workers runtime:
 bun run preview
 ```
 
-Deploy to Cloudflare (run `bunx wrangler login` once first):
+Every push to `main` is tested and then deployed by GitHub Actions (`.github/workflows/deploy.yml`). It needs two repository secrets: `CLOUDFLARE_API_TOKEN`, created from Cloudflare's "Edit Cloudflare Workers" token template with both zones included, and `CLOUDFLARE_ACCOUNT_ID`.
+
+To deploy from your machine instead (run `bunx wrangler login` once first):
 
 ```bash
 bun run deploy
