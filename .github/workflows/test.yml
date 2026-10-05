@@ -1,10 +1,10 @@
 name: Run Tests
 
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
+  # Pushes to main run these tests through the Deploy workflow
+  workflow_call:
 
 jobs:
   test:
@@ -13,6 +13,11 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -27,3 +32,6 @@ jobs:
 
       - name: Run lint
         run: bun run lint
+
+      - name: Run build
+        run: bun run build

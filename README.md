@@ -1,6 +1,6 @@
 ## Getting Started
 
-Install node v20+, bun v1.2+, then install package dependencies:
+Install node v22+, bun v1.2+, then install package dependencies:
 
 ```bash
 bun install
@@ -12,24 +12,25 @@ Run the development server:
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:5173](http://localhost:5173) with your browser to see the result.
 
-## Environment Variables
+## Deployment
 
-Create a `.env.local` file with the following variables:
+The site is a static single-page app (Vite + React Router) served from Cloudflare Workers static assets. There is no server code: the browser queries ClickHouse directly, and paths like `/org/repo` fall back to `index.html` so the client-side router can handle them. Routing and domains are configured in `wrangler.jsonc`, response headers in `public/_headers`.
+
+Preview the production build locally in the Workers runtime:
 
 ```bash
-# Client-side ClickHouse fetching (optional)
-NEXT_PUBLIC_USE_CLIENT_CLICKHOUSE=true
-
-# GitHub API access (optional - for rate limiting)
-GITHUB_TOKEN=your_github_personal_access_token_here
+bun run preview
 ```
 
-### Environment Variable Details:
+Every push to `main` is tested and then deployed by GitHub Actions (`.github/workflows/deploy.yml`). It needs two repository secrets: `CLOUDFLARE_API_TOKEN`, created from Cloudflare's "Edit Cloudflare Workers" token template with both zones included, and `CLOUDFLARE_ACCOUNT_ID`.
 
-- `NEXT_PUBLIC_USE_CLIENT_CLICKHOUSE`: Set to `true` to fetch ClickHouse data directly from the browser instead of the server. This reduces server load and provides faster navigation between pages.
-- `GITHUB_TOKEN`: Optional GitHub personal access token to increase API rate limits when fetching repository metadata.
+To deploy from your machine instead (run `bunx wrangler login` once first):
+
+```bash
+bun run deploy
+```
 
 ## Update node packages
 

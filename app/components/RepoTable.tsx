@@ -1,15 +1,12 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import { ArrowUpDown, Search } from "lucide-react";
-import Link from "next/link";
+import { Link } from "react-router";
 import type { RelatedRepo } from "@/types/github";
-import { fetchMoreRelatedRepos } from "@/app/actions";
 import { getRelatedReposClient, clearExpiredCache } from "@/lib/repos.client";
 import { Skeleton } from "@/app/components/Skeleton";
 // import RepoFilter from './RepoFilter';
 
-// Loading skeleton component for the repo table that matches the server-side loading
+// Loading skeleton component for the repo table
 function RepoTableSkeleton() {
   return (
     // <div className="container mx-auto px-4 py-8">
@@ -42,43 +39,25 @@ function RepoTableSkeleton() {
   );
 }
 
-export default function RepoTable({
-  initialRelatedRepos = [],
-  repoName = "",
-}: {
-  initialRelatedRepos?: RelatedRepo[];
-  repoName?: string;
-}) {
-  const [relatedRepos, setRelatedRepos] =
-    useState<RelatedRepo[]>(initialRelatedRepos);
-  // const [filteredRepos, setFilteredRepos] = useState<RelatedRepo[]>(initialRelatedRepos);
-  const [offset, setOffset] = useState<number>(
-    initialRelatedRepos?.length || 0
+export default function RepoTable({ repoName = "" }: { repoName?: string }) {
+  const [relatedRepos, setRelatedRepos] = useState<RelatedRepo[]>([]);
+  // const [filteredRepos, setFilteredRepos] = useState<RelatedRepo[]>([]);
+  const [offset, setOffset] = useState<number>(0);
+  // Tracked separately from the results, because a loaded repo can have none
+  const [initialLoading, setInitialLoading] = useState<boolean>(
+    Boolean(repoName)
   );
-  const [initialLoading, setInitialLoading] = useState<boolean>(false);
   const [loadingMore, setLoadingMore] = useState<boolean>(false);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
-
-  const useClient = process.env.NEXT_PUBLIC_USE_CLIENT_CLICKHOUSE === "true";
-
-  // Determine if we should show loading initially
-  const shouldShowInitialLoading =
-    useClient &&
-    repoName &&
-    initialRelatedRepos.length === 0 &&
-    relatedRepos.length === 0 &&
-    !error;
+  // Incremented to run the initial fetch again after an error
+  const [attempt, setAttempt] = useState<number>(0);
 
   useEffect(() => {
-    // Clear expired cache entries on component mount when using client-side fetching
-    if (useClient) {
-      clearExpiredCache();
-    }
+    // Clear expired cache entries on component mount
+    clearExpiredCache();
 
-    if (useClient && repoName && relatedRepos.length === 0) {
-      setInitialLoading(true);
-      setError("");
+    if (repoName) {
       getRelatedReposClient(repoName, 0)
         .then((data) => {
           setRelatedRepos(data);
@@ -93,7 +72,7 @@ export default function RepoTable({
           setInitialLoading(false);
         });
     }
-  }, [useClient, repoName, relatedRepos.length]);
+  }, [repoName, attempt]);
 
   const [sortColumn, setSortColumn] = useState<keyof RelatedRepo>("stargazers");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
@@ -153,9 +132,7 @@ export default function RepoTable({
   const handleShowMore = async () => {
     setLoadingMore(true);
     try {
-      const moreRepos = useClient
-        ? await getRelatedReposClient(repoName, offset)
-        : await fetchMoreRelatedRepos(repoName, offset);
+      const moreRepos = await getRelatedReposClient(repoName, offset);
       if (moreRepos.length === 0 || moreRepos.length < 100) {
         setHasMore(false);
       }
@@ -171,7 +148,7 @@ export default function RepoTable({
   };
 
   // Show loading state for initial client-side fetch
-  if (initialLoading || shouldShowInitialLoading) {
+  if (initialLoading) {
     return <RepoTableSkeleton />;
   }
 
@@ -186,8 +163,8 @@ export default function RepoTable({
         <button
           onClick={() => {
             setError("");
-            setRelatedRepos([]);
-            setOffset(0);
+            setInitialLoading(true);
+            setAttempt((prev) => prev + 1);
           }}
           className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
         >
@@ -261,8 +238,7 @@ export default function RepoTable({
                           {repo.repoName}
                         </a>
                         <Link
-                          href={`/${repo.repoName}`}
-                          passHref
+                          to={`/${repo.repoName}`}
                           className="p-2 pl-1"
                           title="View related repos"
                         >

@@ -1,15 +1,13 @@
-"use client";
-
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router";
 import { parseGitHubURL } from "@/utils/github";
 
 export default function RepoInput() {
   const [repo, setRepo] = useState("");
-  const router = useRouter();
+  const navigate = useNavigate();
 
   const handleSearch = () => {
-    if (repo) router.push(`/${repo}`);
+    if (repo) navigate(`/${repo}`);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

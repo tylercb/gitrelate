@@ -102,7 +102,7 @@ export const fetchDataFromClickHouse = async (
       });
   } catch (error) {
     if (error instanceof Error && error.name === "AbortError") {
-      throw new Error("Request timed out. Please try again.");
+      throw new Error("Request timed out. Please try again.", { cause: error });
     }
     console.error("Error fetching data from ClickHouse:", error);
     throw error;
