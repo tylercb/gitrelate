@@ -8,12 +8,20 @@ import { routes } from "@/app/routes";
 
 vi.mock("@/lib/repos.client", () => ({
   getRelatedReposClient: vi.fn(),
+  getStarTotalsClient: vi.fn(),
+  getDataWindowClient: vi.fn(),
   clearExpiredCache: vi.fn(),
 }));
 
-import { getRelatedReposClient } from "@/lib/repos.client";
+import {
+  getDataWindowClient,
+  getRelatedReposClient,
+  getStarTotalsClient,
+} from "@/lib/repos.client";
 
 const mockedGetRelatedReposClient = vi.mocked(getRelatedReposClient);
+const mockedGetStarTotalsClient = vi.mocked(getStarTotalsClient);
+const mockedGetDataWindowClient = vi.mocked(getDataWindowClient);
 
 const INVALID_URL_MESSAGE =
   "Invalid GitHub URL. Please enter a valid GitHub repository.";
@@ -53,6 +61,8 @@ describe("routes", () => {
 
     // Leave the table loading unless a test provides data
     mockedGetRelatedReposClient.mockReturnValue(new Promise(() => {}));
+    mockedGetStarTotalsClient.mockResolvedValue(new Map());
+    mockedGetDataWindowClient.mockReturnValue(new Promise(() => {}));
   });
 
   afterEach(() => {
@@ -88,8 +98,7 @@ describe("routes", () => {
         "facebook/react Related Repos - GitRelate(d)"
       );
       expect(mockedGetRelatedReposClient).toHaveBeenCalledWith(
-        "facebook/react",
-        0
+        "facebook/react"
       );
     });
 
@@ -137,8 +146,7 @@ describe("routes", () => {
       expect(await screen.findByText("related-to/vercel-next.js")).toBeDefined();
       expect(screen.queryByText("related-to/facebook-react")).toBe(null);
       expect(mockedGetRelatedReposClient).toHaveBeenLastCalledWith(
-        "vercel/next.js",
-        0
+        "vercel/next.js"
       );
     });
   });

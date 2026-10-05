@@ -32,6 +32,10 @@ To deploy from your machine instead (run `bunx wrangler login` once first):
 bun run deploy
 ```
 
+## Roadmap
+
+Planned improvements, and what has shipped so far, are tracked in [ROADMAP.md](ROADMAP.md).
+
 ## Update node packages
 
 To check for outdated packages:

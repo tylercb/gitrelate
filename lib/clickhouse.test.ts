@@ -1,5 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { buildQuery, fetchDataFromClickHouse } from "./clickhouse";
+import {
+  buildQuery,
+  buildStarTotalsQuery,
+  fetchDataFromClickHouse,
+  fetchDataWindow,
+  fetchStarTotals,
+} from "./clickhouse";
 
 vi.mock("@/utils/github", () => ({
   parseGitHubURL: vi.fn((input: string) => {
@@ -56,6 +62,12 @@ describe("ClickHouse utilities", () => {
       const query = buildQuery("invalid-input", 100, "stargazers", 0, 0, 0);
 
       expect(query).toBeNull();
+    });
+
+    it("orders ties by repo name so results are always in the same order", () => {
+      const query = buildQuery("owner/repo", 100, "stargazers", 0, 0, 0);
+
+      expect(query).toContain("ORDER BY stargazers DESC, e.repo_name");
     });
 
     it("handles GitHub URL input", () => {
@@ -243,6 +255,104 @@ describe("ClickHouse utilities", () => {
           ratio: 2.0,
         },
       ]);
+    });
+  });
+
+  describe("buildStarTotalsQuery", () => {
+    it("counts star events for the given repos", () => {
+      const query = buildStarTotalsQuery(["owner/repo1", "owner/repo2"]);
+
+      expect(query).toContain("count() AS stars");
+      expect(query).toContain("event_type = 'WatchEvent'");
+      expect(query).toContain("repo_name IN ('owner/repo1', 'owner/repo2')");
+      expect(query).toContain("GROUP BY repo_name");
+    });
+
+    it("escapes quotes and backslashes in repo names", () => {
+      const query = buildStarTotalsQuery(["owner/it's", "owner/back\\slash"]);
+
+      expect(query).toContain(
+        "repo_name IN ('owner/it\\'s', 'owner/back\\\\slash')"
+      );
+    });
+  });
+
+  describe("fetchStarTotals", () => {
+    it("fetches and parses star totals by repo name", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        text: async () => "owner/repo1\t291\nowner/repo2\t49946\n",
+      });
+
+      const result = await fetchStarTotals(["owner/repo1", "owner/repo2"]);
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        "https://play.clickhouse.com/?user=explorer",
+        expect.objectContaining({
+          method: "POST",
+          body: buildStarTotalsQuery(["owner/repo1", "owner/repo2"]),
+        })
+      );
+      expect(result).toEqual(
+        new Map([
+          ["owner/repo1", 291],
+          ["owner/repo2", 49946],
+        ])
+      );
+    });
+
+    it("leaves out repos that ClickHouse has no stars for", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        text: async () => "owner/repo1\t291\n",
+      });
+
+      const result = await fetchStarTotals(["owner/repo1", "owner/unknown"]);
+
+      expect(result).toEqual(new Map([["owner/repo1", 291]]));
+    });
+
+    it("does not query ClickHouse when there are no repos", async () => {
+      const result = await fetchStarTotals([]);
+
+      expect(result).toEqual(new Map());
+      expect(mockFetch).not.toHaveBeenCalled();
+    });
+
+    it("throws error when response is not ok", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        text: async () => "Internal Server Error",
+      });
+
+      await expect(fetchStarTotals(["owner/repo1"])).rejects.toThrow(
+        "ClickHouse responded with status: 500"
+      );
+    });
+  });
+
+  describe("fetchDataWindow", () => {
+    it("fetches the first and last day the dataset covers", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        text: async () => "2023-01-13\t2026-07-02\n",
+      });
+
+      const result = await fetchDataWindow();
+
+      expect(result).toEqual({ start: "2023-01-13", end: "2026-07-02" });
+    });
+
+    it("throws error when the response has no dates", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        text: async () => "",
+      });
+
+      await expect(fetchDataWindow()).rejects.toThrow(
+        "ClickHouse returned no date range"
+      );
     });
   });
 });
