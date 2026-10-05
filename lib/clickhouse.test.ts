@@ -201,6 +201,33 @@ describe("ClickHouse utilities", () => {
       ).rejects.toThrow("Request timed out. Please try again.");
     });
 
+    it("passes a cancellation on instead of reporting a timeout", async () => {
+      const controller = new AbortController();
+      controller.abort();
+      mockFetch.mockRejectedValueOnce(
+        Object.assign(new Error("AbortError"), { name: "AbortError" })
+      );
+
+      await expect(
+        fetchDataFromClickHouse("SELECT * FROM test", controller.signal)
+      ).rejects.toMatchObject({ name: "AbortError" });
+    });
+
+    it("aborts the request when the caller cancels", async () => {
+      const controller = new AbortController();
+      let requestSignal: AbortSignal | undefined;
+      mockFetch.mockImplementationOnce((_url, init) => {
+        requestSignal = init.signal;
+        return new Promise(() => {});
+      });
+
+      fetchDataFromClickHouse("SELECT * FROM test", controller.signal);
+      expect(requestSignal?.aborted).toBe(false);
+
+      controller.abort();
+      expect(requestSignal?.aborted).toBe(true);
+    });
+
     it("handles other network errors", async () => {
       const networkError = new Error("Network error");
       mockFetch.mockRejectedValueOnce(networkError);
