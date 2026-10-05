@@ -80,7 +80,10 @@ describe("client repos utilities", () => {
         0,
         0
       );
-      expect(mockFetchDataFromClickHouse).toHaveBeenCalledWith(mockQuery);
+      expect(mockFetchDataFromClickHouse).toHaveBeenCalledWith(
+        mockQuery,
+        undefined
+      );
       expect(result).toEqual(mockRelatedRepos);
 
       const cached = JSON.parse(
@@ -184,10 +187,10 @@ describe("client repos utilities", () => {
 
       const result = await getStarTotalsClient(["owner/repo1", "owner/repo2"]);
 
-      expect(mockFetchStarTotals).toHaveBeenCalledWith([
-        "owner/repo1",
-        "owner/repo2",
-      ]);
+      expect(mockFetchStarTotals).toHaveBeenCalledWith(
+        ["owner/repo1", "owner/repo2"],
+        undefined
+      );
       expect(result).toEqual(
         new Map([
           ["owner/repo1", 291],
@@ -205,7 +208,10 @@ describe("client repos utilities", () => {
       mockFetchStarTotals.mockResolvedValueOnce(new Map([["owner/niche", 291]]));
       const result = await getStarTotalsClient(["owner/popular", "owner/niche"]);
 
-      expect(mockFetchStarTotals).toHaveBeenLastCalledWith(["owner/niche"]);
+      expect(mockFetchStarTotals).toHaveBeenLastCalledWith(
+        ["owner/niche"],
+        undefined
+      );
       expect(result).toEqual(
         new Map([
           ["owner/popular", 49946],
@@ -252,6 +258,22 @@ describe("client repos utilities", () => {
       // The entry fetched longest ago made way for the new one
       expect(cached["old/repo4999"]).toBeUndefined();
       expect(cached["old/repo0"]).toBeDefined();
+    });
+
+    it("passes the caller's cancel signal on to ClickHouse", async () => {
+      const { signal } = new AbortController();
+      mockBuildQuery.mockReturnValue(mockQuery);
+      mockFetchDataFromClickHouse.mockResolvedValue(mockRelatedRepos);
+      mockFetchStarTotals.mockResolvedValue(new Map());
+
+      await getRelatedReposClient("test/repo", signal);
+      await getStarTotalsClient(["owner/repo1"], signal);
+
+      expect(mockFetchDataFromClickHouse).toHaveBeenCalledWith(
+        mockQuery,
+        signal
+      );
+      expect(mockFetchStarTotals).toHaveBeenCalledWith(["owner/repo1"], signal);
     });
 
     it("propagates errors from fetchStarTotals", async () => {

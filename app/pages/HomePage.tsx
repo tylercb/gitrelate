@@ -1,11 +1,14 @@
 import { Link } from "react-router";
 import RepoInput from "@/app/components/RepoInput";
+import { formatDateRange } from "@/utils/format";
+import { useDataWindow } from "@/utils/useDataWindow";
 import { useDocumentTitle } from "@/utils/useDocumentTitle";
 
 // The rest of this page's metadata (description, Open Graph, etc.) is static
 // and lives in index.html
 export default function HomePage() {
   useDocumentTitle("GitRelate(d) - Find Related GitHub Repositories");
+  const dataWindow = useDataWindow();
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -31,9 +34,11 @@ export default function HomePage() {
           original repo also liked.
         </p>
         <p>
-          Works best with obscure niches with less than 1,000 stargazers. Repos
-          with many stargazers can take up to 30 seconds to load the ClickHouse
-          data and may return less relevant results. Try{" "}
+          Results are ranked by relevance, so closely related projects come
+          ahead of ones that are simply popular everywhere. They are based on
+          GitHub stars given{" "}
+          {dataWindow ? formatDateRange(dataWindow) : "in recent years"}, and
+          repos with many stargazers can take up to 30 seconds to load. Try{" "}
           <Link to="/mattiasthalen/ducklake" className="underline">
             mattiasthalen/ducklake
           </Link>{" "}

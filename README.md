@@ -16,7 +16,7 @@ Open [http://localhost:5173](http://localhost:5173) with your browser to see the
 
 ## Deployment
 
-The site is a static single-page app (Vite + React Router) served from Cloudflare Workers static assets. There is no server code: the browser queries ClickHouse directly, and paths like `/org/repo` fall back to `index.html` so the client-side router can handle them. Routing and domains are configured in `wrangler.jsonc`, response headers in `public/_headers`.
+The site is a static single-page app (Vite + React Router) served from Cloudflare Workers static assets. There is no server code: the browser queries ClickHouse directly, asks GitHub's API for repo details, and paths like `/org/repo` fall back to `index.html` so the client-side router can handle them. Routing and domains are configured in `wrangler.jsonc`, response headers in `public/_headers`.
 
 Preview the production build locally in the Workers runtime:
 

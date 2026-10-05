@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import type { RelatedRepo } from "@/types/github";
+import type { RelatedRepo, RepoDetailsResult } from "@/types/github";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -13,6 +13,11 @@ vi.mock("@/lib/repos.client", () => ({
   clearExpiredCache: vi.fn(),
 }));
 
+vi.mock("@/lib/github.client", () => ({
+  getRepoDetailsClient: vi.fn(),
+}));
+
+import { getRepoDetailsClient } from "@/lib/github.client";
 import {
   getDataWindowClient,
   getRelatedReposClient,
@@ -22,6 +27,7 @@ import {
 const mockedGetRelatedReposClient = vi.mocked(getRelatedReposClient);
 const mockedGetStarTotalsClient = vi.mocked(getStarTotalsClient);
 const mockedGetDataWindowClient = vi.mocked(getDataWindowClient);
+const mockedGetRepoDetailsClient = vi.mocked(getRepoDetailsClient);
 
 const INVALID_URL_MESSAGE =
   "Invalid GitHub URL. Please enter a valid GitHub repository.";
@@ -46,6 +52,21 @@ function relatedRepo(repoName: string): RelatedRepo {
   };
 }
 
+function foundOnGitHub(fullName: string): RepoDetailsResult {
+  return {
+    status: "found",
+    details: {
+      fullName,
+      description: `About ${fullName}`,
+      language: "JavaScript",
+      stars: 240000,
+      topics: ["ui"],
+      archived: false,
+      homepage: null,
+    },
+  };
+}
+
 describe("routes", () => {
   beforeEach(() => {
     // Not implemented by jsdom
@@ -63,6 +84,8 @@ describe("routes", () => {
     mockedGetRelatedReposClient.mockReturnValue(new Promise(() => {}));
     mockedGetStarTotalsClient.mockResolvedValue(new Map());
     mockedGetDataWindowClient.mockReturnValue(new Promise(() => {}));
+    // As if GitHub's hourly limit were reached, unless a test says otherwise
+    mockedGetRepoDetailsClient.mockResolvedValue({ status: "unavailable" });
   });
 
   afterEach(() => {
@@ -83,6 +106,21 @@ describe("routes", () => {
       );
       expect(mockedGetRelatedReposClient).not.toHaveBeenCalled();
     });
+
+    it("says how results are ranked and which dates the data covers", async () => {
+      mockedGetDataWindowClient.mockResolvedValue({
+        start: "2023-01-13",
+        end: "2026-07-02",
+      });
+
+      renderAt("/");
+
+      expect(
+        await screen.findByText(
+          /Results are ranked by relevance.*GitHub stars given between Jan 2023 and Jul 2026/
+        )
+      ).toBeDefined();
+    });
   });
 
   describe("repo page", () => {
@@ -98,8 +136,55 @@ describe("routes", () => {
         "facebook/react Related Repos - GitRelate(d)"
       );
       expect(mockedGetRelatedReposClient).toHaveBeenCalledWith(
-        "facebook/react"
+        "facebook/react",
+        expect.any(AbortSignal)
       );
+    });
+
+    it("shows what GitHub says about the repository", async () => {
+      mockedGetRepoDetailsClient.mockResolvedValue(
+        foundOnGitHub("facebook/react")
+      );
+
+      renderAt("/facebook/react");
+
+      expect(await screen.findByText("About facebook/react")).toBeDefined();
+      expect(screen.getByText("⭐ 240,000 stars on GitHub")).toBeDefined();
+      expect(
+        screen.getByRole("link", { name: "View on GitHub" }).getAttribute("href")
+      ).toBe("https://github.com/facebook/react");
+    });
+
+    it("moves to the name as GitHub spells it when the typed one finds nothing", async () => {
+      mockedGetRepoDetailsClient.mockResolvedValue(
+        foundOnGitHub("Facebook/React")
+      );
+      mockedGetRelatedReposClient.mockImplementation(async (repoName) =>
+        repoName === "Facebook/React" ? [relatedRepo("owner/repo1")] : []
+      );
+
+      const router = renderAt("/facebook/react");
+
+      await waitFor(() =>
+        expect(router.state.location.pathname).toBe("/Facebook/React")
+      );
+      expect(await screen.findByText("owner/repo1")).toBeDefined();
+      // Replaced rather than added, so Back does not bounce to the misspelling
+      expect(router.state.historyAction).toBe("REPLACE");
+    });
+
+    it("stays on the typed name when it has results, whatever GitHub calls it", async () => {
+      mockedGetRepoDetailsClient.mockResolvedValue(
+        foundOnGitHub("Facebook/React")
+      );
+      mockedGetRelatedReposClient.mockResolvedValue([
+        relatedRepo("owner/repo1"),
+      ]);
+
+      const router = renderAt("/facebook/react");
+
+      expect(await screen.findByText("owner/repo1")).toBeDefined();
+      expect(router.state.location.pathname).toBe("/facebook/react");
     });
 
     it("sets the title for different repository names", () => {
@@ -146,7 +231,8 @@ describe("routes", () => {
       expect(await screen.findByText("related-to/vercel-next.js")).toBeDefined();
       expect(screen.queryByText("related-to/facebook-react")).toBe(null);
       expect(mockedGetRelatedReposClient).toHaveBeenLastCalledWith(
-        "vercel/next.js"
+        "vercel/next.js",
+        expect.any(AbortSignal)
       );
     });
   });

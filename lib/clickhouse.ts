@@ -1,4 +1,5 @@
 import type { DataWindow, RelatedRepo } from "@/types/github";
+import { createRequestSignal, isAbortError } from "@/utils/abort";
 import { parseGitHubURL } from "@/utils/github";
 
 // The most stargazers of a repository that a query will look at
@@ -79,12 +80,15 @@ export const buildStarTotalsQuery = (repoNames: string[]): string => {
 /**
  * Runs a SQL query against ClickHouse.
  * @param {string} query - The SQL query to execute.
+ * @param {AbortSignal} [signal] - Cancels the query when aborted.
  * @returns {Promise<string>} - The tab-separated response body.
  */
-const runQuery = async (query: string): Promise<string> => {
+const runQuery = async (
+  query: string,
+  signal?: AbortSignal
+): Promise<string> => {
   const url = "https://play.clickhouse.com/?user=explorer";
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+  const request = createRequestSignal(30000, signal); // 30 second timeout
 
   try {
     const response = await fetch(url, {
@@ -93,7 +97,7 @@ const runQuery = async (query: string): Promise<string> => {
         "Content-Type": "application/x-www-form-urlencoded",
       },
       body: query,
-      signal: controller.signal,
+      signal: request.signal,
     });
 
     if (!response.ok) {
@@ -104,13 +108,16 @@ const runQuery = async (query: string): Promise<string> => {
 
     return await response.text();
   } catch (error) {
-    if (error instanceof Error && error.name === "AbortError") {
+    if (isAbortError(error)) {
+      // Cancelled by the caller rather than timed out, so there is nothing to report
+      if (signal?.aborted) throw error;
+
       throw new Error("Request timed out. Please try again.", { cause: error });
     }
     console.error("Error fetching data from ClickHouse:", error);
     throw error;
   } finally {
-    clearTimeout(timeout);
+    request.done();
   }
 };
 
@@ -124,12 +131,14 @@ const parseRows = (text: string): string[][] =>
 /**
  * Fetches data from ClickHouse using the generated SQL query.
  * @param {string} query - The SQL query to execute.
+ * @param {AbortSignal} [signal] - Cancels the query when aborted.
  * @returns {Promise<RelatedRepo[]>} - The response data as an array of results.
  */
 export const fetchDataFromClickHouse = async (
-  query: string
+  query: string,
+  signal?: AbortSignal
 ): Promise<RelatedRepo[]> => {
-  const text = await runQuery(query);
+  const text = await runQuery(query, signal);
 
   return parseRows(text).map(
     ([repoName, stargazers, forkers, ratio]) =>
@@ -146,14 +155,16 @@ export const fetchDataFromClickHouse = async (
 /**
  * Fetches how many stars each repository received.
  * @param {string[]} repoNames - Repositories in "username/repo" format.
+ * @param {AbortSignal} [signal] - Cancels the query when aborted.
  * @returns {Promise<Map<string, number>>} - Star totals by repository name.
  */
 export const fetchStarTotals = async (
-  repoNames: string[]
+  repoNames: string[],
+  signal?: AbortSignal
 ): Promise<Map<string, number>> => {
   if (repoNames.length === 0) return new Map();
 
-  const text = await runQuery(buildStarTotalsQuery(repoNames));
+  const text = await runQuery(buildStarTotalsQuery(repoNames), signal);
 
   return new Map(
     parseRows(text).map(([repoName, stars]) => [repoName, parseInt(stars, 10)])
