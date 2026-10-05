@@ -19,17 +19,17 @@ Every item has to hold to these. They are why some ideas sit under "Not planned"
 - [x] **Accurate labels.** The star and fork columns are shared counts and are labelled that way. The repo being viewed moved out of its own results into a summary line, and a new column shows the overlap as a share of each repo's stargazers.
 - [x] **State the data window.** The summary and the empty state say which dates the star data covers.
 
-## Phase 2: an easier list to work through (next)
+## Phase 2: an easier list to work through (done)
 
-- [ ] **Filters.** A text filter on repo name, plus toggles to hide repos from the same owner and "awesome" lists. Same-owner repos can dominate: 10 of the top 12 results for `charmbracelet/bubbletea` are charmbracelet's own. `app/components/RepoFilter.tsx` is an unused earlier start on this.
-- [ ] **Repo details on demand.** Show description, language, star count and topics for the repo being viewed, and for a result when its row is opened. These come from GitHub's API, so they need caching in the browser and must fail quietly once the hourly limit is reached.
-- [ ] **Match repo names regardless of letter case.** `clickhouse/clickhouse` finds nothing because ClickHouse only knows `ClickHouse/ClickHouse`. One GitHub API request can resolve the canonical name. A case-insensitive ClickHouse lookup cannot use the table's index and would be slow.
-- [ ] **A better wait for large repos.** Show how long the query has been running, offer a cancel button, and cancel requests that are no longer needed when the visitor navigates away.
-- [ ] **Mobile layout.** The table scrolls sideways on a phone. Give small screens a layout that fits.
-- [ ] **Keyboard-accessible sorting.** Column headers are clickable cells. Make them real buttons that report the current sort to screen readers.
-- [ ] **Refresh the home page copy.** It still warns that large repos "may return less relevant results", which relevance ranking has largely fixed, and it does not mention the data window.
+- [x] **Filters.** A text filter on repo name, plus toggles to hide repos from the same owner and "awesome" lists. Same-owner repos can dominate: 10 of the top 12 results for `charmbracelet/bubbletea` are charmbracelet's own.
+- [x] **Repo details on demand.** Description, language, star count and topics for the repo being viewed, and for a result when its row is opened. These come from GitHub's API, are cached in the browser for a week, and are simply left out once the hourly limit is reached.
+- [x] **Match repo names regardless of letter case.** `clickhouse/clickhouse` used to find nothing because ClickHouse only knows `ClickHouse/ClickHouse`. When a name finds nothing, the page now moves to the name as GitHub spells it, which also follows renamed repos.
+- [x] **A better wait for large repos.** After three seconds the page says how long the search has been running and offers a cancel button. Queries are cancelled when the visitor navigates away.
+- [x] **Mobile layout.** On a phone the table shows the repo, shared stars and overlap, and no longer scrolls sideways.
+- [x] **Keyboard-accessible sorting.** Column headers are real buttons that report the current sort to screen readers.
+- [x] **Refresh the home page copy.** It now says results are ranked by relevance and which dates the data covers.
 
-## Phase 3: new ways to discover
+## Phase 3: new ways to discover (next)
 
 - [ ] **Combine repos.** Show what people who starred both A and B also starred. The second repo must go in a query parameter, because the path has to keep mirroring GitHub's URLs.
 - [ ] **Recency lens.** Limit results to what these stargazers starred in the last 12 months, to show what this audience is into now.
@@ -37,6 +37,7 @@ Every item has to hold to these. They are why some ideas sit under "Not planned"
 - [ ] **Bookmarklet.** A bookmark that swaps `github.com` for `gitrelated.com` on the page being viewed, so finding related repos takes one click.
 - [ ] **Copy as Markdown.** Copy the visible results as a list of links.
 - [ ] **Shareable views.** Keep the sort and filters in the URL so a view can be linked to.
+- [ ] **A better home page example.** `mattiasthalen/ducklake` is suggested on the home page but has a single stargazer in the data window, so it shows almost nothing.
 
 ## Not planned
 
@@ -44,7 +45,7 @@ Every item has to hold to these. They are why some ideas sit under "Not planned"
 | --- | --- |
 | A link preview per repo page | Needs Worker code to rewrite the page for each request. |
 | A cache of results shared between visitors | Needs Worker code and storage. |
-| Descriptions on every result row | 1,000 rows is far beyond GitHub's 60 requests an hour. It would work for visitors who supply their own GitHub token, which could be revisited after "Repo details on demand". |
+| Descriptions on every result row | 1,000 rows is far beyond GitHub's 60 requests an hour. It would work for visitors who supply their own GitHub token, which could be revisited now that details load on demand. |
 
 ## Notes for whoever builds these
 
@@ -56,4 +57,5 @@ Measured in October 2026 against the ClickHouse playground:
 - **The star-totals lookup is the cost of relevance ranking.** For 1,000 candidates it took between 0.1 and 4 seconds, varying from run to run. Totals are cached in the browser for a week and shared between searches, because the same very popular repos turn up in almost every result set.
 - **Relevance was checked on three repos** (`matsonj/nba-monte-carlo`, `duckdb/duckdb`, `charmbracelet/bubbletea`). In each, the top results went from mostly unrelated popular projects to almost entirely on-topic ones.
 - **GitHub's social preview images are not a usable source of repo details.** The image endpoint rate-limits quickly.
+- **GitHub's API ignores letter case in repo names** and answers with the canonical spelling. A request for a repo that does not exist still counts against the hourly limit.
 - **The playground allows a query 60 seconds.** The site gives up after 30.
