@@ -14,7 +14,16 @@ export interface User {
 export interface RelatedRepo {
   repoName: string;
   githubUrl: string;
+  // Stargazers and forkers shared with the repo being viewed, not overall counts
   stargazers: number;
   forkers: number;
   ratio: number;
+  // Stars the repo received within the dataset's time span, once looked up
+  totalStars?: number;
+}
+
+// First and last day the dataset has stars for, as YYYY-MM-DD
+export interface DataWindow {
+  start: string;
+  end: string;
 }
